@@ -313,9 +313,13 @@ Add entries to `.gitignore` (create it if it doesn't exist, or merge into the ex
 
 See [the templates reference](references/TEMPLATES.md) for the full `.gitignore` template.
 
-### Step 10: Verify and Summarize
+### Step 10: Review, Clean Up, and Summarize
 
-After conversion, verify (paths are relative to agent project root — `src/` for Layout A, repo root for Layout B):
+After conversion, do a full review pass over the converted project:
+
+#### Review checklist
+
+Verify (paths are relative to agent project root — `src/` for Layout A, repo root for Layout B):
 
 - [ ] `AGENTS.md` exists with agent instructions
 - [ ] Skills are in `.github/skills/<name>/SKILL.md`
@@ -327,7 +331,21 @@ After conversion, verify (paths are relative to agent project root — `src/` fo
 - [ ] `infra/` directory has all Bicep files and `infra/assets/` from the sample repo
 - [ ] If tools access Azure resources: DefaultAzureCredential is used, role assignments are in rbac.bicep
 
-Tell the user:
+#### Clean up obsolete files
+
+Remove files that are no longer needed after conversion:
+
+- **Old skill locations** — if skills were moved from a non-standard path (e.g., `skills/` at the root) to `.github/skills/`, delete the originals
+- **Converted `scripts/` directories** — if skill `scripts/` folders were converted to Python tools, delete the `scripts/` directories
+- **Old MCP server artifacts** — if local MCP servers were converted to Python tools, remove any related config, packages, or `node_modules/` that were only used by those servers
+- **Stale config files** — remove any `.env` files, `local.settings.json`, or other local config that shouldn't be committed
+- **Temporary clone** — if the sample repo was cloned to a temp directory, delete it
+- **This skill in `.funcignore`** — if the `functions-markdown-agents` skill is installed anywhere in the workspace (e.g., in `.github/skills/functions-markdown-agents/`), add its path to `infra/assets/.funcignore` so it is not included in the deployment package:
+  ```
+  .github/skills/functions-markdown-agents
+  ```
+
+#### Tell the user
 
 1. **Deploy**: Run `azd auth login` (if not already authenticated), then `azd up` from the project root
 2. **During deployment** they'll be prompted for:
